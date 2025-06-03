@@ -3,13 +3,13 @@ package grpserver
 import (
 	"fmt"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
+	grpcapi "github.com/legenda-hortici/hw-6-auth-service/internal/api"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"log/slog"
 	"net"
-	grpcapi "skillsRockAuthService/internal/api"
 )
 
 type App struct {

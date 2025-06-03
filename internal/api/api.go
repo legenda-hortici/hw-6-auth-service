@@ -2,12 +2,13 @@ package grpcapi
 
 import (
 	"context"
+	"github.com/legenda-hortici/hw-6-auth-service/internal/storage/myerr"
+	"github.com/legenda-hortici/hw-6-auth-service/pkg/validator"
 	proto "github.com/legenda-hortici/hw-6-proto/gen/go/auth"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"skillsRockAuthService/internal/storage/myerr"
 )
 
 type AuthService interface {
@@ -29,12 +30,7 @@ func NewAPI(gRPCServer *grpc.Server, auth AuthService) {
 }
 
 func (s *serverAPI) Register(ctx context.Context, request *proto.RegisterRequest) (*proto.RegisterResponse, error) {
-	if request.Username == "" {
-		return nil, status.Error(codes.InvalidArgument, "email is required")
-	}
-
-	if request.Password == "" {
-		return nil, status.Error(codes.InvalidArgument, "password is required")
+	if err := validator.ValidateRegister(request); err != nil {
 	}
 
 	err := s.auth.Register(ctx, request.Username, request.Password)
@@ -52,12 +48,8 @@ func (s *serverAPI) Register(ctx context.Context, request *proto.RegisterRequest
 }
 
 func (s *serverAPI) Login(ctx context.Context, request *proto.LoginRequest) (*proto.LoginResponse, error) {
-	if request.Username == "" {
-		return nil, status.Error(codes.InvalidArgument, "email is required")
-	}
-
-	if request.Password == "" {
-		return nil, status.Error(codes.InvalidArgument, "password is required")
+	if err := validator.ValidateLogin(request); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	token, err := s.auth.Login(ctx, request.Username, request.Password)

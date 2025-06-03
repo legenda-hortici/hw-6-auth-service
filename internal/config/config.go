@@ -11,6 +11,7 @@ type Config struct {
 	LogLevel string `envconfig:"LOG_LEVEL" required:"true"`
 	Database DatabaseConfig
 	GRPC     GRPCconfig
+	TokenJWT TokenJWT
 }
 
 type DatabaseConfig struct {
@@ -30,9 +31,14 @@ type GRPCconfig struct {
 	Timeout    time.Duration `envconfig:"GRPC_TIMEOUT" required:"true"`
 }
 
+type TokenJWT struct {
+	Secret string        `envconfig:"JWT_SECRET" required:"true"`
+	TTL    time.Duration `envconfig:"JWT_TTL" required:"true"`
+}
+
 func NewConfig() *Config {
 	if err := godotenv.Load(".env"); err != nil {
-		panic("Error loading .env file")
+		panic("error loading .env file")
 	}
 
 	var conf Config

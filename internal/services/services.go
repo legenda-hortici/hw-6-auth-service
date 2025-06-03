@@ -2,29 +2,34 @@ package services
 
 import (
 	"context"
+	"github.com/legenda-hortici/hw-6-auth-service/internal/config"
+	"github.com/legenda-hortici/hw-6-auth-service/internal/domain"
+	"github.com/legenda-hortici/hw-6-auth-service/internal/storage/myerr"
+	"github.com/legenda-hortici/hw-6-auth-service/pkg/jwt"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
-	"skillsRockAuthService/internal/domain"
-	"skillsRockAuthService/internal/storage/myerr"
 )
 
 type AuthService struct {
+	cfg          config.Config
 	log          *zap.SugaredLogger
 	authProvider AuthRepository
 }
 
 type AuthRepository interface {
 	Register(ctx context.Context, username string, passHash []byte) error
-	Login(ctx context.Context, email string) (*domain.User, error)
+	Login(ctx context.Context, email string) (*domain.Users, error)
 	CheckUser(ctx context.Context, username string) (bool, error)
 }
 
 func NewAuthService(
+	cfg config.Config,
 	log *zap.SugaredLogger,
 	authProvider AuthRepository,
 ) *AuthService {
 	return &AuthService{
+		cfg:          cfg,
 		log:          log,
 		authProvider: authProvider,
 	}
@@ -72,10 +77,16 @@ func (s *AuthService) Login(ctx context.Context, email, password string) (string
 		return "", errors.Wrap(err, ":"+op)
 	}
 
-	if err := bcrypt.CompareHashAndPassword(user.PassHash, []byte(password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword(user.Password, []byte(password)); err != nil {
 		s.log.Errorf("%s: %v", op, err)
 		return "", errors.Wrap(err, ":"+op)
 	}
 
-	return user.Username, nil
+	token, err := jwt.NewToken(s.cfg.TokenJWT, user)
+	if err != nil {
+		s.log.Errorf("%s: %v", op, err)
+		return "", errors.Wrap(err, ":"+op)
+	}
+
+	return token, nil
 }

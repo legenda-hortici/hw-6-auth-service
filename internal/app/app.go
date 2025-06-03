@@ -1,11 +1,11 @@
 package app
 
 import (
+	grpserver "github.com/legenda-hortici/hw-6-auth-service/internal/app/grpc"
+	"github.com/legenda-hortici/hw-6-auth-service/internal/config"
+	"github.com/legenda-hortici/hw-6-auth-service/internal/services"
+	"github.com/legenda-hortici/hw-6-auth-service/internal/storage"
 	"go.uber.org/zap"
-	grpserver "skillsRockAuthService/internal/app/grpc"
-	"skillsRockAuthService/internal/config"
-	"skillsRockAuthService/internal/services"
-	"skillsRockAuthService/internal/storage"
 )
 
 type App struct {
@@ -22,7 +22,7 @@ func NewApp(
 		panic(err)
 	}
 
-	authService := services.NewAuthService(log, storage)
+	authService := services.NewAuthService(cfg, log, storage)
 
 	grpcApp := grpserver.NewGRPCApp(log, authService, cfg.GRPC.ListenPort)
 

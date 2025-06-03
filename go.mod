@@ -1,4 +1,4 @@
-module skillsRockAuthService
+module github.com/legenda-hortici/hw-6-auth-service
 
 go 1.24.0
 
@@ -10,7 +10,6 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/legenda-hortici/hw-6-proto v1.0.0
 	github.com/pkg/errors v0.9.1
-	github.com/volkowlad/gRPC v0.0.0-20250529075803-d446decfa6c3
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.38.0
 	google.golang.org/grpc v1.72.2
