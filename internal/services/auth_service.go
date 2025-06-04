@@ -17,6 +17,7 @@ type AuthService struct {
 	authProvider AuthRepository
 }
 
+//go:generate go run github.com/vektra/mockery/v2@v2.53.4 --name=AuthRepository
 type AuthRepository interface {
 	Register(ctx context.Context, username string, passHash []byte) error
 	Login(ctx context.Context, email string) (*domain.Users, error)

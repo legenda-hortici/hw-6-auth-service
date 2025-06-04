@@ -8,7 +8,6 @@ import (
 	"github.com/legenda-hortici/hw-6-auth-service/internal/domain"
 	"github.com/legenda-hortici/hw-6-auth-service/internal/storage/myerr"
 	"github.com/pkg/errors"
-	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"time"
@@ -18,7 +17,7 @@ type Storage struct {
 	db *gorm.DB
 }
 
-func NewStorage(log *zap.SugaredLogger, cfg config.Config) (*Storage, error) {
+func NewStorage(cfg config.Config) (*Storage, error) {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
 		cfg.Database.Host,
 		cfg.Database.Username,
@@ -30,7 +29,7 @@ func NewStorage(log *zap.SugaredLogger, cfg config.Config) (*Storage, error) {
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Error("Failed to connect to database", zap.Error(err))
+		panic("Failed to connect to database")
 	}
 
 	return &Storage{db: db}, nil

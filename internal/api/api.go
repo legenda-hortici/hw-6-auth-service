@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+//go:generate go run github.com/vektra/mockery/v2@v2.53.4 --name=AuthService
 type AuthService interface {
 	Register(ctx context.Context, email, password string) error
 	Login(ctx context.Context, email, password string) (string, error)
@@ -35,6 +36,11 @@ func (s *serverAPI) Register(ctx context.Context, request *proto.RegisterRequest
 
 	err := s.auth.Register(ctx, request.Username, request.Password)
 	if err != nil {
+		// Если это статусная ошибка — возвращаем как есть
+		if st, ok := status.FromError(err); ok {
+			return nil, st.Err()
+		}
+
 		if errors.Is(err, myerr.UserNotFoundErr) {
 			return nil, status.Error(codes.NotFound, "user not found")
 		}
