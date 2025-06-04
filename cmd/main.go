@@ -31,7 +31,4 @@ func main() {
 
 	application.GRPCServer.Stop()
 	log.Info("gracefully stoped...")
-
-	// TODO: написать тесты
-
 }
