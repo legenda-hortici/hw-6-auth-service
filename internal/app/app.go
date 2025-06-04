@@ -17,12 +17,14 @@ func NewApp(
 	cfg config.Config,
 ) *App {
 
-	storage, err := storage.NewStorage(log, cfg)
+	storage, err := storage.NewStorage(cfg)
 	if err != nil {
 		panic(err)
 	}
 
 	authService := services.NewAuthService(cfg, log, storage)
+
+	log.Info("database initialized successfully")
 
 	grpcApp := grpserver.NewGRPCApp(log, authService, cfg.GRPC.ListenPort)
 
