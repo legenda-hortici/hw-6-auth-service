@@ -1,11 +1,11 @@
 package main
 
 import (
+	"github.com/legenda-hortici/hw-6-auth-service/internal/app"
+	"github.com/legenda-hortici/hw-6-auth-service/internal/config"
+	"github.com/legenda-hortici/hw-6-auth-service/pkg/logger"
 	"os"
 	"os/signal"
-	"skillsRockAuthService/internal/app"
-	"skillsRockAuthService/internal/config"
-	"skillsRockAuthService/internal/logger"
 )
 
 func main() {
@@ -16,9 +16,9 @@ func main() {
 		panic(err)
 	}
 
-	log.Info(cfg)
-
 	application := app.NewApp(log, *cfg)
+
+	log.Info("starting application")
 
 	go func() {
 		application.GRPCServer.MustRun()
@@ -31,4 +31,7 @@ func main() {
 
 	application.GRPCServer.Stop()
 	log.Info("gracefully stoped...")
+
+	// TODO: написать тесты
+
 }

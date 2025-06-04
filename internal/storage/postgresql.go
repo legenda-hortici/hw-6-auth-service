@@ -4,13 +4,12 @@ import (
 	"context"
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/legenda-hortici/hw-6-auth-service/internal/config"
+	"github.com/legenda-hortici/hw-6-auth-service/internal/domain"
+	"github.com/legenda-hortici/hw-6-auth-service/internal/storage/myerr"
 	"github.com/pkg/errors"
-	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"skillsRockAuthService/internal/config"
-	"skillsRockAuthService/internal/domain"
-	"skillsRockAuthService/internal/storage/myerr"
 	"time"
 )
 
@@ -18,7 +17,7 @@ type Storage struct {
 	db *gorm.DB
 }
 
-func NewStorage(log *zap.SugaredLogger, cfg config.Config) (*Storage, error) {
+func NewStorage(cfg config.Config) (*Storage, error) {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
 		cfg.Database.Host,
 		cfg.Database.Username,
@@ -30,7 +29,7 @@ func NewStorage(log *zap.SugaredLogger, cfg config.Config) (*Storage, error) {
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Error("Failed to connect to database", zap.Error(err))
+		panic("Failed to connect to database")
 	}
 
 	return &Storage{db: db}, nil
@@ -40,8 +39,7 @@ func (s *Storage) CheckUser(ctx context.Context, username string) (bool, error) 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	var user string
-
+	var user domain.Users
 	err := s.db.Where("username = ?", username).First(&user).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -58,10 +56,10 @@ func (s *Storage) Register(ctx context.Context, username string, passHash []byte
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	user := domain.User{
+	user := domain.Users{
 		ID:       uuid.New(),
 		Username: username,
-		PassHash: passHash,
+		Password: passHash,
 	}
 
 	result := s.db.Create(&user)
@@ -72,13 +70,13 @@ func (s *Storage) Register(ctx context.Context, username string, passHash []byte
 	return nil
 }
 
-func (s *Storage) Login(ctx context.Context, email string) (*domain.User, error) {
+func (s *Storage) Login(ctx context.Context, email string) (*domain.Users, error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	var user domain.User
+	var user domain.Users
 
-	err := s.db.Where("email = ?", email).First(&user).Error
+	err := s.db.Where("username = ?", email).First(&user).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, myerr.UserNotFoundErr
