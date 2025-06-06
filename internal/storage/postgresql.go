@@ -86,3 +86,81 @@ func (s *Storage) Login(ctx context.Context, email string) (*domain.Users, error
 
 	return &user, nil
 }
+
+func (s *Storage) SaveRefreshToken(ctx context.Context, refresh domain.RefreshToken) error {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	err := s.db.Create(&refresh).Error
+	if err != nil {
+		return errors.Wrap(err, "failed to save refresh")
+	}
+
+	return nil
+}
+
+func (s *Storage) RefreshTokenCheck(ctx context.Context, refreshID uuid.UUID) (bool, error) {
+	var count int64
+
+	err := s.db.WithContext(ctx).
+		Model(&domain.RefreshToken{}).
+		Where("token_hash = ?", refreshID).
+		Count(&count).Error
+
+	if err != nil {
+		return false, errors.Wrap(err, "failed to query refresh token")
+	}
+
+	return count > 0, nil
+}
+
+func (s *Storage) RefreshTokenUpdate(ctx context.Context, refresh domain.RefreshToken) error {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	err := s.db.WithContext(ctx).
+		Model(&domain.RefreshToken{}).
+		Where("token_hash = ?", refresh.Hash).
+		Updates(domain.RefreshToken{
+			ExpiresAt: refresh.ExpiresAt,
+			CreatedAt: refresh.CreatedAt,
+		}).Error
+
+	if err != nil {
+		return errors.Wrap(err, "failed to update refresh token")
+	}
+
+	return nil
+}
+
+func (s *Storage) UserByID(ctx context.Context, tokenHash uuid.UUID) (domain.Users, error) {
+	var refreshToken domain.RefreshToken
+
+	// Ищем refresh token по его хэшу
+	err := s.db.WithContext(ctx).
+		Model(&domain.RefreshToken{}).
+		Where("token_hash = ?", tokenHash).
+		First(&refreshToken).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return domain.Users{}, myerr.NotFoundErr
+		}
+		return domain.Users{}, errors.Wrap(err, "failed to find refresh token")
+	}
+
+	var user domain.Users
+
+	// Ищем пользователя по user_id из токена
+	err = s.db.WithContext(ctx).
+		Model(&domain.Users{}).
+		Where("id = ?", refreshToken.UserID).
+		First(&user).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return domain.Users{}, myerr.NotFoundErr
+		}
+		return domain.Users{}, errors.Wrap(err, "failed to find user")
+	}
+
+	return user, nil
+}

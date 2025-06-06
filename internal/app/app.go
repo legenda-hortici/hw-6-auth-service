@@ -17,12 +17,12 @@ func NewApp(
 	cfg config.Config,
 ) *App {
 
-	storage, err := storage.NewStorage(cfg)
+	store, err := storage.NewStorage(cfg)
 	if err != nil {
 		panic(err)
 	}
 
-	authService := services.NewAuthService(cfg, log, storage)
+	authService := services.NewAuthService(cfg, log, store, store)
 
 	log.Info("database initialized successfully")
 

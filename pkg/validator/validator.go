@@ -9,6 +9,7 @@ import (
 var (
 	UsernameError = status.Error(codes.InvalidArgument, "username is required")
 	PasswordError = status.Error(codes.InvalidArgument, "password is required")
+	TokenError    = status.Error(codes.InvalidArgument, "token is required")
 )
 
 func ValidateLogin(req *proto.LoginRequest) error {
@@ -30,6 +31,14 @@ func ValidateRegister(req *proto.RegisterRequest) error {
 
 	if req.GetPassword() == "" {
 		return PasswordError
+	}
+
+	return nil
+}
+
+func ValidateToken(req *proto.CheckTokenRequest) error {
+	if req.GetToken() == "" {
+		return TokenError
 	}
 
 	return nil

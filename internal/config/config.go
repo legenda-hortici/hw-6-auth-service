@@ -32,8 +32,9 @@ type GRPCconfig struct {
 }
 
 type TokenJWT struct {
-	Secret string        `envconfig:"JWT_SECRET" required:"true"`
-	TTL    time.Duration `envconfig:"JWT_TTL" required:"true"`
+	Secret     string        `envconfig:"JWT_SECRET" required:"true"`
+	AccessTTL  time.Duration `envconfig:"ACCESS_TTL" required:"true"`
+	RefreshTTL time.Duration `envconfig:"REFRESH_TTL" required:"true"`
 }
 
 func NewConfig() *Config {

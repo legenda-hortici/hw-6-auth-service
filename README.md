@@ -37,7 +37,7 @@ psql -h localhost -p 5433 -U postgres -d your_db
 ```bash
 go install github.com/pressly/goose/v3/cmd/goose@latest
 goose create имя_миграции sql
-goose -dir ./migrations postgres "postgres://user:pass@localhost:5433/dbname?sslmode=disable" up
+goose -dir internal/storage/migrations postgres "postgres://user:pass@localhost:5433/dbname?sslmode=disable" up
 ```
 
 4. Команды для установки и применения тестов для api и service слоев
